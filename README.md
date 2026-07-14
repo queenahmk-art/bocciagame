@@ -2,6 +2,8 @@
 
 Repository: `queenahmk-art/bocciagame`
 
+Public game / 公開試玩：https://queenahmk-art.github.io/bocciagame/
+
 A browser-based, four-end Boccia singles game. The player controls the red side and plays against a blue computer opponent. It is designed as a friendly introduction to direction, power, turn order and simple tactics—not as an official rules, refereeing or competition-scoring tool.
 
 ## Technology
@@ -34,6 +36,8 @@ npm run preview
 ```
 
 The preview URL is normally `http://localhost:4173/`.
+
+Pushes to `main` are tested, built with the correct repository base path and published automatically by `.github/workflows/deploy-pages.yml`.
 
 Tests:
 
