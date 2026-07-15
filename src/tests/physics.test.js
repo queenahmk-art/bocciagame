@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { COURT, PHYSICS } from '../game/constants.js'
-import { applyFriction, areAllBallsStopped, checkOutOfBounds, getJackVLineY, isValidJackPosition, resolveAllCollisions, stepPhysics } from '../game/physics.js'
+import { applyFriction, areAllBallsStopped, checkOutOfBounds, getJackVLineY, isValidJackPosition, placeJackAtCentre, resolveAllCollisions, stepPhysics } from '../game/physics.js'
 
 const moving = (overrides = {}) => ({ x: 100, y: 100, vx: 200, vy: 0, radius: PHYSICS.ballRadius, outOfBounds: false, ...overrides })
 
@@ -25,10 +25,17 @@ describe('physics', () => {
     expect(isValidJackPosition(moving({ x, y: boundary - 5, radius: PHYSICS.jackRadius, vx: 0 }))).toBe(false)
   })
 
-  it('detects Jack and coloured balls only after they fully cross the boundary', () => {
-    expect(checkOutOfBounds(moving({ x: -PHYSICS.ballRadius - 1 }))).toBe(true)
-    expect(checkOutOfBounds(moving({ x: -PHYSICS.ballRadius + 1 }))).toBe(false)
+  it('uses the visible playing lines and the whole ball for out-of-bounds checks', () => {
+    expect(checkOutOfBounds(moving({ x: COURT.inset + PHYSICS.ballRadius + 1 }))).toBe(false)
+    expect(checkOutOfBounds(moving({ x: COURT.inset + PHYSICS.ballRadius }))).toBe(true)
+    expect(checkOutOfBounds(moving({ y: COURT.top + PHYSICS.ballRadius - 1 }))).toBe(true)
+    expect(checkOutOfBounds(moving({ y: COURT.bottom - PHYSICS.ballRadius + 1 }))).toBe(true)
     expect(isValidJackPosition(moving({ x: -20, radius: PHYSICS.jackRadius, vx: 0 }))).toBe(false)
+  })
+
+  it('returns an out-of-bounds Jack to the penalty-box cross', () => {
+    const replaced = placeJackAtCentre(moving({ kind: 'jack', radius: PHYSICS.jackRadius, x: 120, y: 0, vx: 80, vy: -40, outOfBounds: true }))
+    expect(replaced).toMatchObject({ x: COURT.penaltyBox.centreX, y: COURT.penaltyBox.centreY, vx: 0, vy: 0, outOfBounds: false })
   })
 
   it('friction reduces speed and clamps low speed to zero', () => {

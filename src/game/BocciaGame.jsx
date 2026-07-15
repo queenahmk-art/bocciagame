@@ -8,7 +8,7 @@ import BocciaStatus from './BocciaStatus.jsx'
 import { COURT, DIFFICULTIES, PHYSICS, launchSpeed } from './constants.js'
 import { chooseAIJack, chooseAIShot } from './computerAI.js'
 import { appendEndScore, canLaunchShot, createInitialGame, gameReducer, isFinalEnd, resolveInvalidJackTurn } from './gameReducer.js'
-import { isValidJackPosition } from './physics.js'
+import { isValidJackPosition, placeJackAtCentre } from './physics.js'
 import { scoreEnd } from './scoring.js'
 import { determineNextTurn } from './turnLogic.js'
 import { coachTip, courtSummary } from './selectors.js'
@@ -116,7 +116,7 @@ export default function BocciaGame({
             jackThrower: resolution.side, jackAttempts: resolution.jackAttempts, busy: false, aiThinking: false,
             message, announcement: message } })
         } else {
-          const safeJack = { ...shot, x: COURT.centre.x, y: COURT.centre.y, vx: 0, vy: 0, outOfBounds: false }
+          const safeJack = placeJackAtCentre(shot)
           const safeBalls = settledBalls.map((ball) => ball.id === shot.id ? safeJack : ball)
           const sideName = translate(current.language, shot.side === 'red' ? 'redSide' : 'blueSide')
           const message = translate(current.language, 'jackPlacedAfterInvalid', { side: sideName })
@@ -141,7 +141,7 @@ export default function BocciaGame({
     let jackReplaced = false
     if (jack?.outOfBounds) {
       jackReplaced = true
-      jack = { ...jack, x: COURT.centre.x, y: COURT.centre.y, vx: 0, vy: 0, outOfBounds: false }
+      jack = placeJackAtCentre(jack)
       balls = balls.map((ball) => ball.id === jack.id ? jack : ball)
       simulationRef.current = balls
     }

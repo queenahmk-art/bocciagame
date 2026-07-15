@@ -61,7 +61,7 @@ The match contains four ends. Red throws the Jack in ends 1 and 3; blue throws i
 
 If one side has no valid on-court ball, it is treated as farther away. If that side has no balls remaining, the other side completes its balls. In the exact-distance simplified tie case, the side that just threw continues. This consistent tie treatment is implemented in `src/game/turnLogic.js` and tested.
 
-After all 12 coloured balls are used, the closer side scores one point for every valid ball closer to the Jack than the opponent's nearest valid ball. Exact nearest-distance ties score zero. Out-of-bounds balls remain in match data but do not collide, render or score.
+After all 12 coloured balls are used, the closer side scores one point for every valid ball closer to the Jack than the opponent's nearest valid ball. Exact nearest-distance ties score zero. A ball is out as soon as any part reaches a visible court boundary line; the canvas padding outside those lines is not part of the playing area. Out-of-bounds coloured balls remain in match data but do not collide, render or score.
 
 A Jack must stop entirely inside the valid playing area beyond the V-shaped Jack line; the whole ball must cross the sloping boundary at its horizontal position. If the first Jack is invalid, the other colour takes over the Jack throw and becomes the opening side. If both colours make an invalid Jack attempt, this simplified version places the Jack on the centre cross and the second side plays the first coloured ball. AI Jack targets are selected from several valid zones beyond the V line. If the Jack is knocked out during play, it is returned to the centre cross.
 

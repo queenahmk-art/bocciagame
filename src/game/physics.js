@@ -51,7 +51,17 @@ export function resolveAllCollisions(balls) {
 
 export function checkOutOfBounds(ball, court = COURT) {
   const r = ball.radius ?? PHYSICS.ballRadius
-  return ball.x + r < 0 || ball.x - r > court.width || ball.y + r < 0 || ball.y - r > court.height
+  // The dark court boundary is the playing limit. A ball is out as soon as
+  // any part reaches or crosses it; the surrounding canvas is only visual padding.
+  return ball.x - r <= court.inset
+    || ball.x + r >= court.width - court.inset
+    || ball.y - r <= court.top
+    || ball.y + r >= court.bottom
+}
+
+export function placeJackAtCentre(jack, court = COURT) {
+  if (!jack) return null
+  return { ...jack, x: court.centre.x, y: court.centre.y, vx: 0, vy: 0, outOfBounds: false }
 }
 
 export function isBallStopped(ball) {
