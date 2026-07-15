@@ -1,64 +1,68 @@
-# Design QA — Boccia court markings update
+# Design QA — circular aiming and mobile throw controls
 
-- Source visual truth: `/var/folders/yl/10m5mzz16lz_fv9kv8pr3qhh0000gn/T/codex-clipboard-8700e08f-3542-4144-a43b-f8d22f88dc1f.png`
-- Implementation screenshot: `/private/tmp/boccia-penalty-box-final.png`
-- Focused comparison: `/private/tmp/boccia-penalty-box-comparison.png`
-- Mobile evidence: `/private/tmp/boccia-penalty-box-mobile-390.png`
-- Comparison viewport: 1265 × 712 browser viewport; focused court regions normalized to 820 px high
-- State: End 1, player preparing to throw the Jack
+- Source visual truth: `/var/folders/yl/10m5mzz16lz_fv9kv8pr3qhh0000gn/T/TemporaryItems/NSIRD_screencaptureui_orTPoS/Screenshot 2026-07-16 at 12.40.00 AM.png`
+- Mobile implementation screenshot: `/private/tmp/boccia-mobile-aim-final.png`
+- Desktop implementation screenshot: `/private/tmp/boccia-desktop-aim-final.png`
+- Focused comparison: `/private/tmp/boccia-mobile-aim-comparison.png`
+- Primary viewport: 390 × 844
+- Secondary viewport: 1280 × 800
+- State: End 1, player re-aiming the Jack after a validly handled short attempt
 
 ## Full-view comparison evidence
 
-The rendered game keeps its existing scoreboard, court scale and controls while matching the reference court's defining geometry: six equal throwing boxes below the throwing line, a symmetric V-shaped Jack line, and the central square penalty box divided into four equal quadrants. The invalid Jack region is lightly shaded as an intentional in-game affordance.
+The source shows the previous tall control card with separate direction and power sliders. The mobile implementation intentionally replaces the direction slider with a compact circular direction pad, retains the power slider, and keeps the Throw Jack button inside a fixed bottom control dock. The court remains visible behind the dock and the primary action stays within the 844 px viewport without requiring the user to drag the page downward.
 
-## Focused region comparison evidence
+At 390 × 844 the page has no horizontal overflow. The dock occupies y=670.5–836.8, the Throw button is 46 px high at y=779.4–825.4, and the safe-area-aware bottom spacing remains inside the viewport. At 1280 × 800 the same controls return to the existing 290 px desktop column and do not use fixed positioning.
 
-The side-by-side normalized court crop shows that both V arms meet at the horizontal centre, all six throwing boxes have equal widths, and the penalty box is centred horizontally in the upper playing area with the same outer-square and internal-cross construction as the reference. A focused comparison was necessary because the source is a dimensioned court diagram while the implementation is embedded inside the complete game UI.
+## Focused comparison evidence
+
+The normalized side-by-side comparison shows the old slider-based control on the left and the new mobile dock on the right. The Jack/turn heading, 52 power value, low–medium–high labels, gold control token and gold primary action remain recognizable. The requested interaction change is clear: the direction rail and verbose help are replaced by a circular J-ball direction pad, while the retained power control and Throw Jack action are compressed into the adjacent thumb-reach column.
 
 ## Required fidelity surfaces
 
-- Fonts and typography: Existing game typography is preserved. Canvas labels use system UI text at the established small court-label scale; throwing-box numerals remain legible and centred. The penalty box contains no unnecessary text.
-- Spacing and layout rhythm: Court aspect ratio and existing responsive placement are unchanged. V-line, throwing-box and penalty-box placement follow the reference. At a 390 px viewport the document remains within the available width with no horizontal overflow.
-- Colors and visual tokens: Dark green court boundaries and the existing red throwing line remain consistent with the game. The warm neutral exclusion-zone fill is an intentional usability addition and has sufficient contrast without competing with balls.
-- Image quality and asset fidelity: The source contains geometric court markings rather than raster assets. Canvas 2D is the correct rendering surface and continues to scale for device pixel ratio. The penalty square and its four quadrants remain crisp at desktop and mobile sizes.
-- Copy and content: Traditional Chinese and English Canvas descriptions now mention the V line, six throwing boxes and central penalty box.
+- Fonts and typography: The existing system/serif hierarchy, weights and Traditional Chinese copy remain consistent. Mobile labels are reduced without truncation; the primary action remains readable at 0.96 rem.
+- Spacing and layout rhythm: The desktop column preserves the established card spacing. Mobile uses a two-column 94 px / flexible grid and safe-area-aware fixed positioning. No persistent control or text is clipped at 390 × 844.
+- Colors and visual tokens: Existing ink, paper, muted, red and gold tokens are reused. The circular control uses the same Jack/red-ball semantics and focus styling as the rest of the game.
+- Image quality and asset fidelity: This change contains no missing raster imagery, logo or illustration asset. The circular direction pad is a functional form control, and the Canvas court continues to render at device pixel ratio.
+- Copy and content: Bilingual help, tutorial copy, Canvas description and README now describe the circular direction control rather than a court target or direction slider.
 
 ## Findings
 
-No actionable P0, P1 or P2 visual differences remain within the requested scope.
+No actionable P0, P1 or P2 visual or responsive findings remain within the requested scope.
 
 ## Comparison history
 
-- Earlier P2: The first implementation placed the V-line explanation over the apex and aiming line, reducing legibility.
-- Fix: Moved the explanation to the upper-left valid area above the side endpoint while keeping the V geometry unobstructed.
-- Post-fix evidence: `/private/tmp/boccia-vline-final-top2.png` and `/private/tmp/boccia-vline-comparison.png`.
-- Earlier P1: The first court implementation omitted the reference diagram's central 35 × 35 cm penalty square.
-- Fix: Added a centred square with a clear outer boundary and horizontal/vertical dividers, preserving the existing central cross and game physics.
-- Post-fix evidence: `/private/tmp/boccia-penalty-box-final.png` and `/private/tmp/boccia-penalty-box-comparison.png`.
+- Earlier P1: On mobile, the direction slider duplicated court aiming and the Throw action sat below the tall court/status sequence, making it difficult to reach while playing.
+- Fix: Removed court pointer aiming and the direction range input; added a pointer/keyboard circular direction pad and a fixed, safe-area-aware mobile control dock.
+- Post-fix evidence: `/private/tmp/boccia-mobile-aim-final.png` and `/private/tmp/boccia-mobile-aim-comparison.png`.
+- Earlier P1: The Canvas used `touch-action: none`, so gestures started on the largest mobile surface could not participate in normal vertical page movement.
+- Fix: Moved all pointer aiming into the circular control and changed the court Canvas to `touch-action: pan-y`.
+- Post-fix evidence: computed mobile style reports `pan-y`; the dock remains fixed at the bottom with no horizontal overflow.
 
 ## Interaction verification
 
-- A low-power 34° Jack stopped short of the sloping boundary, displayed the bilingual invalid-Jack message and enabled a rethrow.
-- A centred Jack at the same low power fully crossed the V line and advanced to the first coloured-ball turn.
-- Automated tests cover penalty-box centring, centre-apex clearance, side-slope clearance, full-ball radius clearance, valid AI Jack targets and existing physics/game flow.
-- Browser console showed no application errors during this pass.
+- Tapping the right side of the circular pad changed the direction from 0° to 28° and immediately rotated the in-court aiming line.
+- The Throw Jack button launched the Jack, disabled controls during movement, and restored the controls with the existing invalid-Jack explanation after the short attempt stopped.
+- The circular control exposes slider semantics, values and Left/Right/Home/End keyboard behavior; the power input remains a native range control.
+- Automated tests cover straight, left, right, clamped and keyboard direction calculations. All 31 tests pass.
+- Browser console contained no warnings or errors.
 
-## Open Questions
+## Open questions
 
-None. Measurement arrows, coaching benches and officials' furniture from the educational diagram are intentionally excluded from the playable court.
+None. The fixed dock intentionally overlaps only the lower throwing-box edge so the direction, power and primary action remain usable without scrolling; page bottom padding keeps later restart/rules content reachable.
 
 ## Implementation checklist
 
-- [x] Draw six equal throwing boxes.
-- [x] Draw a symmetric V-shaped Jack line.
-- [x] Draw the central four-quadrant penalty box.
-- [x] Require the whole Jack to cross the local sloping boundary.
-- [x] Constrain AI Jack targets to the valid V-line region.
-- [x] Update bilingual copy and simplified rules.
-- [x] Verify desktop, 390 px mobile, invalid rethrow and valid continuation.
+- [x] Remove the direction range input and on-court pointer target control.
+- [x] Add a circular finger/mouse direction pad with keyboard support.
+- [x] Retain the power slider and existing launch physics.
+- [x] Keep mobile throw controls within thumb reach above the safe area.
+- [x] Allow vertical gestures on the court Canvas.
+- [x] Update bilingual copy, tutorial and README.
+- [x] Verify 390 × 844 and 1280 × 800 layouts, launch flow and console.
 
 ## Follow-up polish
 
-The small court labels could be hidden at extremely narrow embedded sizes if future compact-mode testing finds them visually dense.
+None required for this scope.
 
 final result: passed

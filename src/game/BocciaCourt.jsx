@@ -132,7 +132,7 @@ function drawCourt(context, balls, aim, interactive, labels) {
   balls.forEach((ball) => drawBall(context, ball))
 }
 
-function BocciaCourt({ simulationRef, busy, aim, interactive, onAim, onSettled, t, reducedMotion }) {
+function BocciaCourt({ simulationRef, busy, aim, interactive, onSettled, t, reducedMotion }) {
   const canvasRef = useRef(null)
   const latestRef = useRef({ busy, aim, interactive, onSettled, t, reducedMotion })
   latestRef.current = { busy, aim, interactive, onSettled, t, reducedMotion }
@@ -180,33 +180,12 @@ function BocciaCourt({ simulationRef, busy, aim, interactive, onAim, onSettled, 
     }
   }, [simulationRef])
 
-  const pointAim = (event) => {
-    if (!interactive) return
-    const rect = event.currentTarget.getBoundingClientRect()
-    const x = (event.clientX - rect.left) * COURT.width / rect.width
-    const y = (event.clientY - rect.top) * COURT.height / rect.height
-    const dx = x - COURT.width / 2
-    const dy = y - (COURT.throwLine + 35)
-    onAim(Math.max(-34, Math.min(34, Math.atan2(dx, -dy) * 180 / Math.PI)))
-  }
-
-  const keyAim = (event) => {
-    if (!interactive) return
-    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-      event.preventDefault(); onAim(aim.angle + (event.key === 'ArrowLeft' ? -1 : 1))
-    }
-  }
-
   return (
     <canvas
       ref={canvasRef}
       className="boccia-court"
       role="img"
-      tabIndex={interactive ? 0 : -1}
       aria-label={t('canvasLabel')}
-      onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); pointAim(event) }}
-      onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) pointAim(event) }}
-      onKeyDown={keyAim}
     />
   )
 }

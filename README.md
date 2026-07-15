@@ -48,8 +48,9 @@ npm run test:watch
 
 ## Controls
 
-- Mouse/touch: drag the aiming point on the court, adjust the power slider, then choose Throw.
-- Keyboard: Tab through controls; Left/Right adjusts direction; Up/Down adjusts power; Enter or Space activates the focused Throw button.
+- Mouse/touch: drag the ball inside the circular direction control, adjust the power slider, then choose Throw.
+- Keyboard: focus the circular direction control and use Left/Right (or Home/End); use the power slider with arrow keys; Enter or Space activates the focused Throw button.
+- On screens up to 700 px wide, the compact direction, power and Throw controls stay fixed above the safe-area inset so the primary action remains within thumb reach while viewing the court.
 - Ball labels `R`, `B` and `J` ensure the game does not rely only on colour.
 - A polite live region announces meaningful changes only: turns, settled/out balls, scores, new ends and match completion.
 - `prefers-reduced-motion` shortens non-essential delays and accelerates the simulation while preserving the result.

@@ -250,7 +250,7 @@ export default function BocciaGame({
           <BocciaScoreboard state={state} t={t} />
           <section className="court-column">
             <BocciaCourt simulationRef={simulationRef} busy={state.busy} aim={{ angle: state.angle, power: state.power }} interactive={playerCanThrow}
-              onAim={setAngle} onSettled={handleSettled} t={t} reducedMotion={reducedMotion} />
+              onSettled={handleSettled} t={t} reducedMotion={reducedMotion} />
             <BocciaStatus message={state.message} coach={state.coach} summary={summary} t={t} />
           </section>
           <aside className="control-column">
