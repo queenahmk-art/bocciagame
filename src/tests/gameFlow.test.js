@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { appendEndScore, canLaunchShot, createInitialGame, gameReducer, isFinalEnd } from '../game/gameReducer.js'
+import { appendEndScore, canLaunchShot, createInitialGame, gameReducer, isFinalEnd, resolveInvalidJackTurn } from '../game/gameReducer.js'
 
 describe('match flow', () => {
   it('recognises the fourth end as match completion', () => {
@@ -32,5 +32,19 @@ describe('match flow', () => {
     const active = { ...createInitialGame(), screen: 'game', end: 3, balls: [{ id: 1 }] }
     const changed = gameReducer(active, { type: 'PATCH', payload: { language: 'en-HK' } })
     expect(changed).toMatchObject({ language: 'en-HK', end: 3, balls: [{ id: 1 }] })
+  })
+
+  it('hands the first invalid Jack to the other colour', () => {
+    expect(resolveInvalidJackTurn('red', 0)).toEqual({ action: 'handoff', side: 'blue', jackAttempts: 1 })
+    expect(resolveInvalidJackTurn('blue', 0)).toEqual({ action: 'handoff', side: 'red', jackAttempts: 1 })
+  })
+
+  it('places the Jack after both colours have made an invalid attempt', () => {
+    expect(resolveInvalidJackTurn('blue', 1)).toEqual({ action: 'place', side: 'blue', jackAttempts: 2 })
+  })
+
+  it('resets Jack attempts at the start of every end', () => {
+    const next = gameReducer({ ...createInitialGame(), jackAttempts: 2, end: 1 }, { type: 'NEXT_END' })
+    expect(next).toMatchObject({ end: 2, jackThrower: 'blue', turn: 'blue', jackAttempts: 0 })
   })
 })

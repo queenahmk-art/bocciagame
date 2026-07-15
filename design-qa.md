@@ -6,7 +6,7 @@
 - Focused comparison: `/private/tmp/boccia-mobile-aim-comparison.png`
 - Primary viewport: 390 × 844
 - Secondary viewport: 1280 × 800
-- State: End 1, player re-aiming the Jack after a validly handled short attempt
+- State: End 1, immediately after an invalid first Jack is handed to the other colour
 
 ## Full-view comparison evidence
 
@@ -42,9 +42,9 @@ No actionable P0, P1 or P2 visual or responsive findings remain within the reque
 ## Interaction verification
 
 - Tapping the right side of the circular pad changed the direction from 0° to 28° and immediately rotated the in-court aiming line.
-- The Throw Jack button launched the Jack, disabled controls during movement, and restored the controls with the existing invalid-Jack explanation after the short attempt stopped.
+- The Throw Jack button launched the Jack and disabled controls during movement; an invalid first attempt now hands the Jack throw to the other colour.
 - The circular control exposes slider semantics, values and Left/Right/Home/End keyboard behavior; the power input remains a native range control.
-- Automated tests cover straight, left, right, clamped and keyboard direction calculations. All 31 tests pass.
+- Automated tests cover straight, left, right, clamped and keyboard direction calculations, plus the invalid-Jack handoff. All 34 tests pass.
 - Browser console contained no warnings or errors.
 
 ## Open questions

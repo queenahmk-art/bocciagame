@@ -7,7 +7,7 @@ import BocciaResults from './BocciaResults.jsx'
 import BocciaStatus from './BocciaStatus.jsx'
 import { COURT, DIFFICULTIES, PHYSICS, launchSpeed } from './constants.js'
 import { chooseAIJack, chooseAIShot } from './computerAI.js'
-import { appendEndScore, canLaunchShot, createInitialGame, gameReducer, isFinalEnd } from './gameReducer.js'
+import { appendEndScore, canLaunchShot, createInitialGame, gameReducer, isFinalEnd, resolveInvalidJackTurn } from './gameReducer.js'
 import { isValidJackPosition } from './physics.js'
 import { scoreEnd } from './scoring.js'
 import { determineNextTurn } from './turnLogic.js'
@@ -106,24 +106,31 @@ export default function BocciaGame({
 
     if (shot.kind === 'jack') {
       if (!isValidJackPosition(shot)) {
-        if (shot.side === 'red') {
+        const resolution = resolveInvalidJackTurn(shot.side, current.jackAttempts)
+        if (resolution.action === 'handoff') {
           const withoutShot = settledBalls.filter((ball) => ball.id !== shot.id)
+          const nextSideName = translate(current.language, resolution.side === 'red' ? 'redSide' : 'blueSide')
           simulationRef.current = withoutShot
-          dispatch({ type: 'PATCH', payload: { balls: withoutShot, jack: null, busy: false, aiThinking: false,
-            message: translate(current.language, 'jackInvalid'), announcement: translate(current.language, 'jackInvalid') } })
+          const message = translate(current.language, 'jackInvalidHandoff', { side: nextSideName })
+          dispatch({ type: 'PATCH', payload: { balls: withoutShot, jack: null, phase: 'jack', turn: resolution.side,
+            jackThrower: resolution.side, jackAttempts: resolution.jackAttempts, busy: false, aiThinking: false,
+            message, announcement: message } })
         } else {
           const safeJack = { ...shot, x: COURT.centre.x, y: COURT.centre.y, vx: 0, vy: 0, outOfBounds: false }
           const safeBalls = settledBalls.map((ball) => ball.id === shot.id ? safeJack : ball)
+          const sideName = translate(current.language, shot.side === 'red' ? 'redSide' : 'blueSide')
+          const message = translate(current.language, 'jackPlacedAfterInvalid', { side: sideName })
           simulationRef.current = safeBalls
-          dispatch({ type: 'PATCH', payload: { balls: safeBalls, jack: safeJack, phase: 'color', turn: current.jackThrower,
-            busy: false, aiThinking: false, message: '', announcement: translate(current.language, 'yourTurn') } })
+          dispatch({ type: 'PATCH', payload: { balls: safeBalls, jack: safeJack, phase: 'color', turn: shot.side,
+            jackThrower: shot.side, jackAttempts: resolution.jackAttempts, busy: false, aiThinking: false,
+            message, announcement: `${message} ${shot.side === 'red' ? translate(current.language, 'yourTurn') : translate(current.language, 'computerTurn')}` } })
         }
       } else {
         const stoppedJack = { ...shot, vx: 0, vy: 0 }
         const balls = settledBalls.map((ball) => ball.id === shot.id ? stoppedJack : ball)
         simulationRef.current = balls
-        dispatch({ type: 'PATCH', payload: { balls, jack: stoppedJack, phase: 'color', turn: current.jackThrower,
-          busy: false, aiThinking: false, message: '', announcement: current.jackThrower === 'red' ? translate(current.language, 'yourTurn') : translate(current.language, 'computerTurn') } })
+        dispatch({ type: 'PATCH', payload: { balls, jack: stoppedJack, phase: 'color', turn: shot.side, jackThrower: shot.side,
+          busy: false, aiThinking: false, message: '', announcement: shot.side === 'red' ? translate(current.language, 'yourTurn') : translate(current.language, 'computerTurn') } })
       }
       later(() => { settlingRef.current = false }, 0)
       return

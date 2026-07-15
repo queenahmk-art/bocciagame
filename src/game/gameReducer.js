@@ -4,7 +4,7 @@ export function createInitialGame({ language = 'zh-Hant-HK', difficulty = DIFFIC
   return {
     language, difficulty, screen: 'start', tutorialOpen: true, tutorialStep: 0,
     sound: true, end: 1, totalEnds: TOTAL_ENDS, total: { red: 0, blue: 0 }, endScores: [],
-    phase: 'jack', jackThrower: 'red', turn: 'red', remaining: { red: BALLS_PER_SIDE, blue: BALLS_PER_SIDE },
+    phase: 'jack', jackThrower: 'red', jackAttempts: 0, turn: 'red', remaining: { red: BALLS_PER_SIDE, blue: BALLS_PER_SIDE },
     thrown: { red: 0, blue: 0 }, balls: [], jack: null, lastThrower: null,
     busy: false, aiThinking: false, angle: 0, power: 52, announcement: '', message: '', coach: '', result: null,
   }
@@ -19,12 +19,19 @@ export function gameReducer(state, action) {
     case 'NEXT_END': {
       const nextEnd = state.end + 1
       const thrower = nextEnd % 2 === 1 ? 'red' : 'blue'
-      return { ...state, end: nextEnd, phase: 'jack', jackThrower: thrower, turn: thrower,
+      return { ...state, end: nextEnd, phase: 'jack', jackThrower: thrower, jackAttempts: 0, turn: thrower,
         remaining: { red: BALLS_PER_SIDE, blue: BALLS_PER_SIDE }, thrown: { red: 0, blue: 0 }, balls: [], jack: null,
         lastThrower: null, busy: false, aiThinking: false, angle: 0, power: 52, message: '', coach: '' }
     }
     default: return state
   }
+}
+
+export function resolveInvalidJackTurn(side, jackAttempts = 0) {
+  if (jackAttempts === 0) {
+    return { action: 'handoff', side: side === 'red' ? 'blue' : 'red', jackAttempts: 1 }
+  }
+  return { action: 'place', side, jackAttempts: jackAttempts + 1 }
 }
 
 export function appendEndScore(state, score) {

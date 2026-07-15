@@ -63,7 +63,7 @@ If one side has no valid on-court ball, it is treated as farther away. If that s
 
 After all 12 coloured balls are used, the closer side scores one point for every valid ball closer to the Jack than the opponent's nearest valid ball. Exact nearest-distance ties score zero. Out-of-bounds balls remain in match data but do not collide, render or score.
 
-A player Jack must stop entirely inside the valid playing area beyond the V-shaped Jack line; the whole ball must cross the sloping boundary at its horizontal position. An invalid attempt is retaken without penalty. AI Jack targets are selected from several valid zones beyond the V line. If the Jack is knocked out during play, this simplified version returns it to the centre cross.
+A Jack must stop entirely inside the valid playing area beyond the V-shaped Jack line; the whole ball must cross the sloping boundary at its horizontal position. If the first Jack is invalid, the other colour takes over the Jack throw and becomes the opening side. If both colours make an invalid Jack attempt, this simplified version places the Jack on the centre cross and the second side plays the first coloured ball. AI Jack targets are selected from several valid zones beyond the V line. If the Jack is knocked out during play, it is returned to the centre cross.
 
 ## Physics and rendering
 
