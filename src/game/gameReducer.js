@@ -1,25 +1,22 @@
 import { BALLS_PER_SIDE, DIFFICULTIES, TOTAL_ENDS } from './constants.js'
 
-export function createInitialGame({ language = 'zh-Hant-HK', difficulty = DIFFICULTIES.BEGINNER, playerName = '' } = {}) {
+export function createInitialGame({ language = 'zh-Hant-HK', difficulty = DIFFICULTIES.BEGINNER } = {}) {
   return {
-    language, difficulty, playerName, screen: 'start', tutorialOpen: false, tutorialStep: 0,
+    language, difficulty, screen: 'start', tutorialOpen: true, tutorialStep: 0,
     sound: true, end: 1, totalEnds: TOTAL_ENDS, total: { red: 0, blue: 0 }, endScores: [],
     phase: 'jack', jackThrower: 'red', jackAttempts: 0, turn: 'red', remaining: { red: BALLS_PER_SIDE, blue: BALLS_PER_SIDE },
     thrown: { red: 0, blue: 0 }, balls: [], jack: null, lastThrower: null,
     busy: false, aiThinking: false, angle: 0, power: 52, announcement: '', message: '', coach: '', result: null,
-    rankingScore: 0, leaderboardEntryId: null,
+    gamePoints: 0,
   }
 }
 
 export function gameReducer(state, action) {
   switch (action.type) {
     case 'PATCH': return { ...state, ...action.payload }
-    case 'START': return { ...createInitialGame({ language: state.language, difficulty: state.difficulty,
-      playerName: action.payload?.playerName ?? state.playerName }), screen: 'game', tutorialOpen: false }
-    case 'RESTART': return { ...createInitialGame({ language: state.language, difficulty: state.difficulty,
-      playerName: state.playerName }), screen: 'game', tutorialOpen: false }
-    case 'HOME': return { ...createInitialGame({ language: state.language, difficulty: state.difficulty,
-      playerName: state.playerName }), tutorialOpen: false }
+    case 'START': return { ...createInitialGame({ language: state.language, difficulty: state.difficulty }), screen: 'game', tutorialOpen: false }
+    case 'RESTART': return { ...createInitialGame({ language: state.language, difficulty: state.difficulty }), screen: 'game', tutorialOpen: false }
+    case 'HOME': return { ...createInitialGame({ language: state.language, difficulty: state.difficulty }), tutorialOpen: false }
     case 'NEXT_END': {
       const nextEnd = state.end + 1
       const thrower = nextEnd % 2 === 1 ? 'red' : 'blue'

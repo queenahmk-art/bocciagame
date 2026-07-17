@@ -12,7 +12,6 @@ A browser-based, four-end Boccia singles game. The player controls the red side 
 - Canvas 2D for the court, balls, aiming line and animation
 - A small custom fixed-step physics engine (no game/physics framework)
 - `useReducer` for match state and refs for high-frequency simulation state
-- Browser `localStorage` for the on-device leaderboard
 - Vitest for deterministic unit and flow tests
 - Scoped responsive CSS under `.boccia-game-app`
 
@@ -56,17 +55,12 @@ npm run test:watch
 - A polite live region announces meaningful changes only: turns, settled/out balls, scores, new ends and match completion.
 - `prefers-reduced-motion` shortens non-essential delays and accelerates the simulation while preserving the result.
 
-## Player registration, scoring and leaderboard
+## Game points
 
-A player name is required before a match can begin. The submitted name is shown on the in-game scoreboard and is attached to the completed-match leaderboard entry.
-
-- Beginner: each player scoring ball is worth 100 leaderboard points.
-- Advanced (`tactical` internally): each player scoring ball is worth 200 leaderboard points.
-- Official-style match balls remain visible separately from leaderboard points, so the match result and ranking score are not confused.
-- Completed entries are sorted by points, then scoring balls, and the top 10 are displayed on the start and results screens.
-- Up to 50 valid entries are retained in browser storage. Saved points are recalculated from the difficulty and scoring-ball count when loaded.
-
-This repository is deployed as a static GitHub Pages site and has no shared database. The current leaderboard is therefore explicitly labelled **This device / 本裝置**: it persists in that browser but is not shared between different players' devices. A global public leaderboard requires a separately configured backend and abuse controls.
+- Beginner: each player scoring ball is worth 100 game points.
+- Advanced (`tactical` internally): each player scoring ball is worth 200 game points.
+- Official-style match balls remain visible separately from game points, so the match result and difficulty bonus are not confused.
+- No player name, leaderboard, browser storage or cloud database is used.
 
 ## Simplified match rules
 
@@ -112,7 +106,6 @@ The game does not require a router, iframe, fixed full-page overlay, formal webs
 - Collision response assumes equal mass and does not model spin, ball deformation, surface variations or referee procedures.
 - AI plans a bounded target and can reason about direct hits/blocks, but it does not run a full multi-collision trajectory search.
 - Generated oscillator feedback is intentionally minimal; no recorded audio is bundled.
-- Leaderboard entries are local to one browser because the static GitHub Pages deployment has no shared database.
 - Browser and assistive-technology combinations should receive final acceptance testing before public integration.
 
 ## Future hkboccia.com.hk integration

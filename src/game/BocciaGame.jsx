@@ -5,7 +5,6 @@ import BocciaScoreboard from './BocciaScoreboard.jsx'
 import BocciaTutorial from './BocciaTutorial.jsx'
 import BocciaResults from './BocciaResults.jsx'
 import BocciaStatus from './BocciaStatus.jsx'
-import BocciaLeaderboard from './BocciaLeaderboard.jsx'
 import { COURT, DIFFICULTIES, PHYSICS, launchSpeed } from './constants.js'
 import { chooseAIJack, chooseAIShot } from './computerAI.js'
 import { appendEndScore, canLaunchShot, createInitialGame, gameReducer, isFinalEnd, resolveInvalidJackTurn } from './gameReducer.js'
@@ -13,7 +12,7 @@ import { isValidJackPosition, placeJackAtCentre } from './physics.js'
 import { scoreEnd } from './scoring.js'
 import { determineNextTurn } from './turnLogic.js'
 import { coachTip, courtSummary } from './selectors.js'
-import { createLeaderboardEntry, MAX_PLAYER_NAME_LENGTH, normalizePlayerName, readLeaderboard, recordLeaderboardEntry } from './leaderboard.js'
+import { calculateGamePoints } from './gamePoints.js'
 import { translate, translations } from '../i18n/translations.js'
 import '../styles/boccia-game.css'
 
@@ -33,10 +32,7 @@ export default function BocciaGame({
     difficulty: Object.values(DIFFICULTIES).includes(initialDifficulty) ? initialDifficulty : DIFFICULTIES.BEGINNER,
   }))
   const [reducedMotion, setReducedMotion] = useState(false)
-  const [leaderboard, setLeaderboard] = useState(() => readLeaderboard())
-  const [nameError, setNameError] = useState(false)
   const stateRef = useRef(state)
-  const playerNameInputRef = useRef(null)
   const simulationRef = useRef([])
   const shotCounterRef = useRef(0)
   const settlingRef = useRef(false)
@@ -93,24 +89,12 @@ export default function BocciaGame({
     const messageKey = score.reason === 'tie' ? 'tieScore' : score.reason === 'noBalls' ? 'noScore' : `${score.side}Scores`
     const message = translate(current.language, messageKey, { points: score.points })
     const complete = isFinalEnd(current.end)
-    let leaderboardResult = {}
-    if (complete) {
-      const completedAt = new Date().toISOString()
-      const entry = createLeaderboardEntry({
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-        playerName: current.playerName,
-        difficulty: current.difficulty,
-        ballsScored: additions.total.red,
-        completedAt,
-      })
-      setLeaderboard(recordLeaderboardEntry(entry))
-      leaderboardResult = { rankingScore: entry.score, leaderboardEntryId: entry.id }
-    }
+    const gamePoints = complete ? calculateGamePoints(additions.total.red, current.difficulty) : current.gamePoints
     const nextState = {
       ...additions, balls, jack, result: score, busy: false, aiThinking: false,
       phase: complete ? 'complete' : 'endTransition', screen: complete ? 'results' : 'game',
       message, announcement: `${message} ${complete ? translate(current.language, 'matchComplete') : ''}`,
-      ...leaderboardResult,
+      gamePoints,
     }
     dispatch({ type: 'PATCH', payload: nextState })
   }, [])
@@ -224,16 +208,8 @@ export default function BocciaGame({
   }, [state.screen, state.turn, state.busy, state.phase, state.end, launchShot, later, reducedMotion, t])
 
   const start = () => {
-    const playerName = normalizePlayerName(stateRef.current.playerName)
-    if (!playerName) {
-      setNameError(true)
-      dispatch({ type: 'PATCH', payload: { tutorialOpen: false } })
-      later(() => playerNameInputRef.current?.focus(), 0)
-      return
-    }
-    setNameError(false)
     simulationRef.current = []
-    dispatch({ type: 'START', payload: { playerName } })
+    dispatch({ type: 'START' })
   }
   const restart = () => {
     simulationRef.current = []
@@ -246,10 +222,6 @@ export default function BocciaGame({
   }
   const home = () => { simulationRef.current = []; dispatch({ type: 'HOME' }) }
   const setDifficulty = (difficulty) => dispatch({ type: 'PATCH', payload: { difficulty } })
-  const setPlayerName = (playerName) => {
-    dispatch({ type: 'PATCH', payload: { playerName: playerName.slice(0, MAX_PLAYER_NAME_LENGTH) } })
-    if (nameError) setNameError(false)
-  }
   const changeLanguage = () => dispatch({ type: 'PATCH', payload: { language: state.language === 'zh-Hant-HK' ? 'en-HK' : 'zh-Hant-HK' } })
   const setAngle = (angle) => { if (playerCanThrow) dispatch({ type: 'PATCH', payload: { angle: clamp(angle, -34, 34) } }) }
   const setPower = (power) => { if (playerCanThrow) dispatch({ type: 'PATCH', payload: { power: clamp(power, PHYSICS.minPower, PHYSICS.maxPower) } }) }
@@ -272,22 +244,14 @@ export default function BocciaGame({
             <p className="eyebrow">Player vs AI · 4 Ends</p>
             <h1>{t('gameName')}</h1><p className="subtitle">{t('subtitle')}</p>
             <p className="disclaimer">{t('disclaimer')}</p>
-            <form className="player-setup" onSubmit={(event) => { event.preventDefault(); start() }} noValidate>
-              <label className="player-name-field" htmlFor="player-name"><span>{t('playerName')}</span><small>{t('playerNameHelp')}</small>
-                <input ref={playerNameInputRef} id="player-name" name="playerName" type="text" autoComplete="nickname" maxLength={MAX_PLAYER_NAME_LENGTH}
-                  value={state.playerName} onChange={(event) => setPlayerName(event.target.value)} placeholder={t('playerNamePlaceholder')}
-                  required aria-invalid={nameError} aria-describedby={nameError ? 'player-name-error' : undefined} />
-              </label>
-              {nameError ? <p className="field-error" id="player-name-error" role="alert">{t('playerNameRequired')}</p> : null}
-              <fieldset className="difficulty-picker"><legend>{t('difficulty')}</legend>
-                <button type="button" className={state.difficulty === 'beginner' ? 'selected' : ''} onClick={() => setDifficulty('beginner')}><strong>{t('beginner')}</strong><small>{t('beginnerScoreRule')}</small></button>
-                <button type="button" className={state.difficulty === 'tactical' ? 'selected' : ''} onClick={() => setDifficulty('tactical')}><strong>{t('tactical')}</strong><small>{t('advancedScoreRule')}</small></button>
-              </fieldset>
-              <div className="landing-actions"><button className="primary" type="submit">{t('startGame')}</button><button type="button" onClick={() => dispatch({ type: 'PATCH', payload: { tutorialOpen: true, tutorialStep: 0 } })}>{t('gameHelp')}</button></div>
-            </form>
+            <fieldset className="difficulty-picker"><legend>{t('difficulty')}</legend>
+              <button className={state.difficulty === 'beginner' ? 'selected' : ''} onClick={() => setDifficulty('beginner')}><strong>{t('beginner')}</strong><small>{t('beginnerScoreRule')}</small></button>
+              <button className={state.difficulty === 'tactical' ? 'selected' : ''} onClick={() => setDifficulty('tactical')}><strong>{t('tactical')}</strong><small>{t('advancedScoreRule')}</small></button>
+            </fieldset>
+            <div className="landing-actions"><button className="primary" onClick={start}>{t('startGame')}</button><button onClick={() => dispatch({ type: 'PATCH', payload: { tutorialOpen: true, tutorialStep: 0 } })}>{t('gameHelp')}</button></div>
             {(rulesUrl || contactUrl) ? <p className="external-links">{rulesUrl ? <a href={rulesUrl}>{t('officialRules')}</a> : null}{contactUrl ? <a href={contactUrl}>{t('contact')}</a> : null}</p> : null}
           </div>
-          <div className="landing-side"><BocciaLeaderboard entries={leaderboard} t={t} compact /></div>
+          <div className="landing-art" aria-hidden="true"><div className="mini-court"><i className="ball jack">J</i><i className="ball red">R</i><i className="ball blue">B</i><span /></div></div>
         </section>
       ) : null}
 
@@ -308,7 +272,7 @@ export default function BocciaGame({
         </div>
       ) : null}
 
-      {state.screen === 'results' ? <BocciaResults state={state} leaderboard={leaderboard} t={t} onAgain={restart} onHome={home}
+      {state.screen === 'results' ? <BocciaResults state={state} t={t} onAgain={restart} onHome={home}
         onDifficulty={() => { setDifficulty(state.difficulty === 'beginner' ? 'tactical' : 'beginner'); restart() }} /> : null}
 
       <BocciaTutorial open={state.tutorialOpen} step={state.tutorialStep} t={t} inGame={state.screen === 'game'}

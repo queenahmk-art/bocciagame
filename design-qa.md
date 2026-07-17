@@ -44,7 +44,7 @@ No actionable P0, P1 or P2 visual or responsive findings remain within the reque
 - Tapping the right side of the circular pad changed the direction from 0° to 28° and immediately rotated the in-court aiming line.
 - The Throw Jack button launched the Jack and disabled controls during movement; an invalid first attempt now hands the Jack throw to the other colour.
 - The circular control exposes slider semantics, values and Left/Right/Home/End keyboard behavior; the power input remains a native range control.
-- Automated tests cover straight, left, right, clamped and keyboard direction calculations, the invalid-Jack handoff, replacement of an out-of-bounds Jack, required player-name flow, result rendering, and the 100/200-point leaderboard rules. All 42 tests pass.
+- Automated tests cover straight, left, right, clamped and keyboard direction calculations, the invalid-Jack handoff, replacement of an out-of-bounds Jack, result rendering, and the retained 100/200 game-point rules. All 38 tests pass.
 - Browser console contained no warnings or errors.
 
 ## Open questions

@@ -1,5 +1,5 @@
 import { leadingSide } from './scoring.js'
-import { calculateLeaderboardScore } from './leaderboard.js'
+import { calculateGamePoints } from './gamePoints.js'
 
 export default function BocciaScoreboard({ state, t }) {
   const leader = state.jack ? leadingSide(state.balls, state.jack) : { side: null }
@@ -8,7 +8,7 @@ export default function BocciaScoreboard({ state, t }) {
   return (
     <section className="scoreboard" aria-label={t('score')}>
       <div className="end-marker"><strong>{t('end', { current: state.end })}</strong><span>{t('ofEnds', { total: state.totalEnds })}</span></div>
-      <div className="score-card red"><span>{state.playerName || t('player')} · {t('redSide')}</span><strong>{state.total.red}</strong><small>{t('remaining')}: {state.remaining.red}</small><small>{t('rankingPoints')}: {calculateLeaderboardScore(state.total.red, state.difficulty)}</small></div>
+      <div className="score-card red"><span>{t('player')} · {t('redSide')}</span><strong>{state.total.red}</strong><small>{t('remaining')}: {state.remaining.red}</small><small>{t('gamePoints')}: {calculateGamePoints(state.total.red, state.difficulty)}</small></div>
       <div className="score-card blue"><span>{t('computer')} · {t('blueSide')}</span><strong>{state.total.blue}</strong><small>{t('remaining')}: {state.remaining.blue}</small></div>
       <dl className="match-facts">
         <div><dt>{t('currentTurn')}</dt><dd>{turnText}</dd></div>
