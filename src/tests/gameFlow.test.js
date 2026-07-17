@@ -15,10 +15,16 @@ describe('match flow', () => {
   })
 
   it('restart clears play data but preserves language and difficulty', () => {
-    const dirty = { ...createInitialGame({ language: 'en-HK', difficulty: 'tactical' }), screen: 'game', total: { red: 5, blue: 2 }, balls: [{}] }
+    const dirty = { ...createInitialGame({ language: 'en-HK', difficulty: 'tactical', playerName: 'Ada' }), screen: 'game', total: { red: 5, blue: 2 }, balls: [{}] }
     const reset = gameReducer(dirty, { type: 'RESTART' })
     expect(reset.total).toEqual({ red: 0, blue: 0 }); expect(reset.balls).toEqual([])
     expect(reset.language).toBe('en-HK'); expect(reset.difficulty).toBe('tactical')
+    expect(reset.playerName).toBe('Ada')
+  })
+
+  it('requires the submitted player name to be carried into a new game', () => {
+    const started = gameReducer(createInitialGame({ playerName: '  draft  ' }), { type: 'START', payload: { playerName: 'Draft' } })
+    expect(started).toMatchObject({ screen: 'game', playerName: 'Draft', tutorialOpen: false })
   })
 
   it('prevents duplicate throws while busy or while AI is thinking', () => {
