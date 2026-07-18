@@ -61,6 +61,9 @@
 .boccia-game-app .game-header nav { display: flex; align-items: center; gap: .45rem; }
 .boccia-game-app .game-header button { min-height: 40px; padding: .45rem .75rem; border-color: transparent; background: transparent; }
 
+.boccia-game-app.is-embedded .landing,
+.boccia-game-app.is-embedded .game-shell { min-height: 100vh; }
+
 .boccia-game-app .landing {
   display: grid;
   min-height: calc(100vh - 72px);
@@ -190,6 +193,8 @@
   .boccia-game-app .game-header nav { gap: 0; }
   .boccia-game-app .game-header button { padding: .35rem .5rem; }
   .boccia-game-app .landing { min-height: calc(100vh - 62px); grid-template-columns: 1fr; padding: 2.3rem 1rem; background: linear-gradient(145deg, #fbfaf5, #e2e8e2); }
+  .boccia-game-app.is-embedded .landing,
+  .boccia-game-app.is-embedded .game-shell { min-height: 100dvh; }
   .boccia-game-app .landing-art { display: none; }
   .boccia-game-app h1 { font-size: clamp(2.7rem, 14vw, 4.2rem); }
   .boccia-game-app .difficulty-picker { width: 100%; }

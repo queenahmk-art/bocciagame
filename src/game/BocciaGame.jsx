@@ -27,6 +27,7 @@ export default function BocciaGame({
   rulesUrl,
   contactUrl,
 }) {
+  const isEmbedded = typeof window !== 'undefined' && window.self !== window.top
   const [state, dispatch] = useReducer(gameReducer, null, () => createInitialGame({
     language: validLanguage(initialLanguage),
     difficulty: Object.values(DIFFICULTIES).includes(initialDifficulty) ? initialDifficulty : DIFFICULTIES.BEGINNER,
@@ -227,16 +228,18 @@ export default function BocciaGame({
   const setPower = (power) => { if (playerCanThrow) dispatch({ type: 'PATCH', payload: { power: clamp(power, PHYSICS.minPower, PHYSICS.maxPower) } }) }
 
   return (
-    <main className={`boccia-game-app ${compactMode ? 'compact' : ''}`}>
-      <header className="game-header">
-        <a className="brand" href="#game"><span className="brand-mark" aria-hidden="true">B</span><span><strong>{t('gameName')}</strong><small>{t('englishName')}</small></span></a>
-        <nav aria-label={t('gameHelp')}>
-          {state.screen === 'game' ? <button onClick={() => dispatch({ type: 'PATCH', payload: { tutorialOpen: true, tutorialStep: 0 } })}>{t('gameHelp')}</button> : null}
-          <button onClick={changeLanguage} aria-label={t('language')}>{t('language')}</button>
-          <button onClick={() => dispatch({ type: 'PATCH', payload: { sound: !state.sound } })} aria-label={state.sound ? t('soundOff') : t('soundOn')}>{state.sound ? '◉' : '○'} <span className="optional-label">{state.sound ? t('soundOff') : t('soundOn')}</span></button>
-          {compactMode && onExit ? <button onClick={onExit}>{t('compactExit')}</button> : null}
-        </nav>
-      </header>
+    <main className={`boccia-game-app ${compactMode ? 'compact' : ''} ${isEmbedded ? 'is-embedded' : ''}`}>
+      {!isEmbedded ? (
+        <header className="game-header">
+          <a className="brand" href="#game"><span className="brand-mark" aria-hidden="true">B</span><span><strong>{t('gameName')}</strong><small>{t('englishName')}</small></span></a>
+          <nav aria-label={t('gameHelp')}>
+            {state.screen === 'game' ? <button onClick={() => dispatch({ type: 'PATCH', payload: { tutorialOpen: true, tutorialStep: 0 } })}>{t('gameHelp')}</button> : null}
+            <button onClick={changeLanguage} aria-label={t('language')}>{t('language')}</button>
+            <button onClick={() => dispatch({ type: 'PATCH', payload: { sound: !state.sound } })} aria-label={state.sound ? t('soundOff') : t('soundOn')}>{state.sound ? '◉' : '○'} <span className="optional-label">{state.sound ? t('soundOff') : t('soundOn')}</span></button>
+            {compactMode && onExit ? <button onClick={onExit}>{t('compactExit')}</button> : null}
+          </nav>
+        </header>
+      ) : null}
 
       {state.screen === 'start' ? (
         <section className="landing" id="game">
